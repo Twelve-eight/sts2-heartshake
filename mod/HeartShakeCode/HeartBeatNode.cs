@@ -34,6 +34,9 @@ public partial class HeartBeatNode : Node
     // res://HeartShake/heartbeat.ogg (renamed from SLS_SFX_HeartBeat_Simple_v1).
     private static AudioStream? _beatStream;
 
+    /// <summary>Set after one failed load/log attempt; never retried per beat.</summary>
+    private static bool _beatLoadFailed;
+
     private readonly Creature _heart;
 
     private double _nextBeatAt;
@@ -94,11 +97,17 @@ public partial class HeartBeatNode : Node
 
     private static void PlayBeat()
     {
+        if (_beatLoadFailed)
+        {
+            return;
+        }
         try
         {
             _beatStream ??= LoadBeatStream();
             if (_beatStream == null)
             {
+                // LoadBeatStream already logged the error; one shot only.
+                _beatLoadFailed = true;
                 return;
             }
             // StS1: playAV random pitch in [-0.05, 0.05] -> Godot pitch scale
@@ -118,18 +127,30 @@ public partial class HeartBeatNode : Node
         {
             MainFile.Log.Error($"Heartbeat audio failed: {e.Message}");
             // Don't let a broken stream break the shake loop; stop trying.
-            _beatStream = null;
+            _beatLoadFailed = true;
         }
     }
 
+    /// <summary>
+    /// The ogg ships as a raw file in the mod pck (quick PCK packer does not
+    /// run the Godot import step, so ResourceLoader cannot see it - verified
+    /// in godot.log: "Missing heartbeat sound at res://HeartShake/heartbeat.ogg").
+    /// FileAccess reads raw pck bytes fine; build the stream at runtime.
+    /// </summary>
     private static AudioStream? LoadBeatStream()
     {
         var path = $"{MainFile.ResPath}/heartbeat.ogg";
-        if (!ResourceLoader.Exists(path))
+        var bytes = Godot.FileAccess.GetFileAsBytes(path);
+        if (bytes.Length == 0)
         {
-            MainFile.Log.Error($"Missing heartbeat sound at {path} (pck not packed?)");
+            MainFile.Log.Error($"Heartbeat sound unreadable at {path} (error {Godot.FileAccess.GetOpenError()})");
             return null;
         }
-        return ResourceLoader.Load<AudioStream>(path);
+        var stream = AudioStreamOggVorbis.LoadFromBuffer(bytes);
+        if (stream == null)
+        {
+            MainFile.Log.Error($"heartbeat.ogg is not valid Ogg Vorbis data ({bytes.Length} bytes)");
+        }
+        return stream;
     }
 }
