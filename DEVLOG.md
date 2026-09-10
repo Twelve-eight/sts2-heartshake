@@ -61,6 +61,35 @@
 
 ### 发布状态
 
-- GitHub: 待建 (Twelve-eight/sts2-heartshake).
-- 工坊: staging + VDF 已备; 发布等用户实机验证通过后走
-  `.tmp/STEAMCMD-ACCESS.md` 流程 (码前零准备纪律).
+- GitHub: https://github.com/Twelve-eight/sts2-heartshake (已建并推送, 4711937 + 979a1f2).
+- 工坊: staging + VDF + 专用推送脚本 workshop/heartshake-push.ps1 已备;
+  发布等用户最终确认后走 `.tmp/STEAMCMD-ACCESS.md` 流程 (码前零准备纪律).
+
+## Session 2 - 2026-09-11: 音效修复实测通过 + 心跳/BGM 同步性研究
+
+### 音效修复 (commit 979a1f2, 用户实测: 有心跳声)
+
+用户报告震动正常无声音 -> godot.log 定位: `ResourceLoader.Exists` 对 pck 内
+原始 ogg 返回 false (quick packer 无 .import 元数据). 修复:
+`Godot.FileAccess.GetFileAsBytes` 读原始字节 +
+`AudioStreamOggVorbis.LoadFromBuffer` 运行时构造流; 失败只报一次
+(_beatLoadFailed), 不再每拍重试刷日志. 震动/音效现已双确认.
+
+### 心跳是否对齐 BGM 第三拍 - 结论: 否 (三方证据闭环)
+
+用户提问 -> 研究产出已固化到
+`sts2-spire1/research/sts1-kb/mechanics/heartbeat.md` (R01-R07,
+mechanics 索引规则数 285 -> 292):
+
+1. **代码层 [高]**: TempMusic/MainMusic/MusicMaster 零 setPosition, BGM 恒从
+   头播, 无相位输出; 心跳走独立 spine 动画计时, 两系统零通信.
+2. **音频分析 [中]**: STS_Boss4_v6.ogg 谱流+comb-filter ->
+   ~157.2 BPM (拍 0.3817s, 分段稳定性 10 窗 9 窗 157.0-157.5);
+   心跳 1.3333s = 3.493 拍, 不可通约, 相位持续漂移.
+   工具链: pip --target G:/omp works/.tmp/pylibs (numpy+soundfile),
+   libsndfile 原生解码 ogg, 不写 C 盘.
+3. **用户一代实机听感**: 大多数心跳落在两拍之间, 少部分偶合踩拍 - 与
+   3.493 拍漂移特征吻合 (连续 6-7 个心跳内相位仅移动 ~5ms/拍, 段落内听感
+   "几乎踩拍", 跨段后滑走).
+
+HeartShake 立场: 不做拍对齐 (忠实原版解耦行为), 见 heartbeat.md R07 基线表.
