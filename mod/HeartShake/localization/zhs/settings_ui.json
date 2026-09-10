@@ -1,0 +1,6 @@
+{
+  "HEARTSHAKE-ENABLEHEARTSHAKE.title": "启用心跳震动",
+  "HEARTSHAKE-ENABLEHEARTSHAKE.hover.desc": "启用后: Act4Heart 尖塔之心战斗中还原一代心跳屏幕脉冲 (弱震动+音效), 每 1.33 秒一次, 直到心脏死亡.",
+  "HEARTSHAKE-ENABLEHEARTSOUND.title": "启用心跳音效",
+  "HEARTSHAKE-ENABLEHEARTSOUND.hover.desc": "每次脉冲播放一代原版心跳音效 (SLS_SFX_HeartBeat_Simple), 音量跟随游戏音效设置."
+}
