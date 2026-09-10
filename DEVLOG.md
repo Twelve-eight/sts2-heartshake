@@ -93,3 +93,10 @@ mechanics 索引规则数 285 -> 292):
    "几乎踩拍", 跨段后滑走).
 
 HeartShake 立场: 不做拍对齐 (忠实原版解耦行为), 见 heartbeat.md R07 基线表.
+
+## Session 3 - 2026-09-11: 创意工坊首发成功
+
+- 用户自行执行 heartbeat-push.ps1 (码前零准备流程): PublishFileID **3799286717**,
+  Committing update..Success.
+- VDF publishedfileid 已回填固化, 后续更新直接重复同一条推送命令即可.
+- 工坊页: https://steamcommunity.com/sharedfiles/filedetails/?id=3799286717
