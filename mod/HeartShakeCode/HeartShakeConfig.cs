@@ -17,8 +17,8 @@ internal class HeartShakeConfig : SimpleModConfig
 
     /// <summary>
     /// Play the StS1 heartbeat sound (SLS_SFX_HeartBeat_Simple_v1.ogg) with
-    /// each beat. Volume follows the game's master volume through the debug
-    /// audio manager bus routing.
+    /// each beat. The beat is played by a self-built AudioStreamPlayer on the
+    /// SFX bus, so its volume follows the game's SFX bus setting.
     /// </summary>
     public static bool EnableHeartSound { get; set; } = true;
 

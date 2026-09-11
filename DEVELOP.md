@@ -56,11 +56,12 @@ Harmony patch `NCombatRoom._Ready` (postfix): 检查当前遭遇怪物, 若含
   Weak: 一代心跳是"持续整个战斗的背景脉冲", 太弱会没存在感, 一代 LOW
   实际观感偏弱但每 1.3s 一次累计明显. 默认 Weak, 可配置.
 - 音效: 打包 SLS_SFX_HeartBeat_Simple_v1.ogg (一代原版文件, CCP 对 StS1
-  mod 生态一贯宽松; 我们只在自己 mod 内播放, 不修改上游) 到 HeartShake.pck,
-  经 NDebugAudioManager 播放. 备选: 不带音效 (配置开关).
-  - [INFERENCE] NDebugAudioManager.Play 的文件名参数可能要求文件在调试音
-    频目录注册过; 运行时验证, 失败则 fallback: AudioStreamPlayer 自建节点
-    播放预加载 ogg (Act4Heart 的 Music 类就是这么干 ogg 的).
+  mod 生态一贯宽松; 我们只在自己 mod 内播放, 不修改上游) 到 HeartShake.pck.
+  实现方式(已定案, 见 DEVLOG Session 2): ResourceLoader 看不到 pck 内的裸
+  ogg, 因此改用 FileAccess.GetFileAsBytes 读原始字节 + AudioStreamOggVorbis
+  .LoadFromBuffer, 播放节点是自建 AudioStreamPlayer(Bus "SFX").
+  NDebugAudioManager 未使用 - 上面那条 [INFERENCE] 与其 fallback 方案在实机
+  上就是最终实现. 音效可由配置开关关闭.
 - 生命周期: 控制器 node 监听战斗结束 (心脏死/玩家死/房间退出). 简化:
   node 挂在 NCombatRoom 下, 房间销毁时自动一起销毁, `_ExitTree` 停止.
   心脏死亡即时停: 轮询检查 creature.IsDead (1.33s 一拍频率够低, 每拍检查
@@ -78,7 +79,8 @@ csproj: `<A4HDll>G:/steam/steamapps/workshop/content/2868840/3747537811/Act4Hear
   **不引用 A4H dll**, 纯字符串识别. Act4Heart 不在时 patch 照常无害运行
   (永远匹配不到 CORRUPT_HEART). 这比条件编译更简单更稳.
   - 修正: manifest.json 里声明依赖 id "Act4Heart" 让 loader 保证加载顺序
-    (BaseLib 模板 manifest 支持 dependencies 数组 - 待查证格式).
+    (BaseLib 模板 manifest 支持 dependencies 数组; 格式已实现并随 v0.1.0 发布,
+    见 mod/HeartShake.json 的 BaseLib>=3.4.5 + Act4Heart>=1.1.7).
 
 ## 5. 交付物
 
@@ -91,5 +93,4 @@ csproj: `<A4HDll>G:/steam/steamapps/workshop/content/2868840/3747537811/Act4Hear
 
 - 构建 0 错误, PCK packed, mods/ mtime 更新.
 - pck 字节级抽查: 心跳 ogg 内嵌.
-- 实机心脏战视觉效果: 无法自动验证, 移交用户 (进 Act4Heart 心脏战观察
-  周期性弱震+心跳声).
+- 实机心脏战视觉效果: 用户已双确认 (DEVLOG Session 2: "震动/音效现已双确认").
