@@ -1,6 +1,8 @@
 {
-  "HEARTSHAKE-ENABLEHEARTSHAKE.title": "Enable heartbeat shake / 启用心跳震动",
-  "HEARTSHAKE-ENABLEHEARTSHAKE.hover.desc": "When enabled: the Act4Heart Corrupt Heart fight plays the StS1 heartbeat screen pulse (weak shake + sound) every 1.33s until the heart dies. / 启用后: Act4Heart 尖塔之心战斗中还原一代心跳屏幕脉冲 (弱震动+音效), 每 1.33 秒一次, 直到心脏死亡.",
-  "HEARTSHAKE-ENABLEHEARTSOUND.title": "Enable heartbeat sound / 启用心跳音效",
-  "HEARTSHAKE-ENABLEHEARTSOUND.hover.desc": "Play the original StS1 heartbeat sound (SLS_SFX_HeartBeat_Simple) with each pulse. Volume follows your SFX volume. / 每次脉冲播放一代原版心跳音效 (SLS_SFX_HeartBeat_Simple), 音量跟随游戏音效设置."
+  "HEARTSHAKE-ENABLE_HEART_SHAKE.title": "Enable heartbeat shake / 启用心跳震动",
+  "HEARTSHAKE-ENABLE_HEART_SHAKE.hover.desc": "When enabled: the Act4Heart Corrupt Heart fight plays the StS1 heartbeat screen pulse (weak shake + sound) every 1.33s until the heart dies. / 启用后: Act4Heart 尖塔之心战斗中还原一代心跳屏幕脉冲 (弱震动+音效), 每 1.33 秒一次, 直到心脏死亡.",
+  "HEARTSHAKE-ENABLE_HEART_SOUND.title": "Enable heartbeat sound / 启用心跳音效",
+  "HEARTSHAKE-ENABLE_HEART_SOUND.hover.desc": "Play the original StS1 heartbeat sound (SLS_SFX_HeartBeat_Simple) with each pulse. Volume follows your SFX volume. / 每次脉冲播放一代原版心跳音效 (SLS_SFX_HeartBeat_Simple), 音量跟随游戏音效设置.",
+  "HEARTSHAKE-BEAT_OF_DEATH_TARGETS_OSTY.title": "Beat of Death targets Osty / 出牌伤害由奥斯提承受",
+  "HEARTSHAKE-BEAT_OF_DEATH_TARGETS_OSTY.hover.desc": "Only in the Act4Heart Corrupt Heart fight: when enabled, the Beat of Death damage (HP loss on card play) is redirected to Osty if Osty is alive; otherwise falls back to the player. / 仅在 Act4Heart 尖塔之心战斗中生效: 启用后, 死亡节拍(出牌受伤)改由奥斯提承受; 若奥斯提已死亡或玩家未召唤奥斯提, 则仍由玩家承受."
 }

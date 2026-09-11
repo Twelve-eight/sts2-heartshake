@@ -22,6 +22,14 @@ internal class HeartShakeConfig : SimpleModConfig
     /// </summary>
     public static bool EnableHeartSound { get; set; } = true;
 
+    /// <summary>
+    /// When enabled, the Corrupt Heart's Beat of Death (HP loss on playing a
+    /// card) is redirected to Osty instead of the player. Only takes effect if
+    /// Osty is alive; falls back to vanilla behaviour when Osty is dead or not
+    /// present. Default false preserves the original fight balance.
+    /// </summary>
+    public static bool BeatOfDeathTargetsOsty { get; set; } = false;
+
     // Shake strength is fixed to StS1 fidelity (Weak/Short) - deliberately not
     // configurable in v0.1.0 to keep the settings page honest; a strength enum
     // can be added if users ask.

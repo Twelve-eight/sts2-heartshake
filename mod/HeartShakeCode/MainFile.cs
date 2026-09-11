@@ -31,6 +31,7 @@ public partial class MainFile : Node
         {
             var harmony = new HarmonyLib.Harmony(ModId);
             harmony.PatchAll(Assembly.GetExecutingAssembly());
+            Patches.BeatOfDeathRedirectPatch.Apply(harmony);
         }
         catch (Exception e)
         {
