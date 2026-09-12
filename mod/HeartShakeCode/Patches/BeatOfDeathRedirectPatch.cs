@@ -24,10 +24,18 @@ internal static class BeatOfDeathRedirectPatch
 {
     internal static void Apply(HarmonyLib.Harmony harmony)
     {
-        var targetType = AccessTools.TypeByName("Act4Heart.BeatOfDeathPower");
+        // TYPE IDENTITY (astra-advice item 8, 2026-09-12; evidence
+        // astra-advice-evidence/2026-09-12/heart-type-identities.txt): the
+        // shipped Act4Heart dll declares the class in the Powers SUB-namespace -
+        // "Act4Heart.Powers.BeatOfDeathPower". The old lookup used the flat
+        // name, resolved null, and the new feature silently "skipped" forever.
+        // The lookup now tries the verified name first and keeps the legacy
+        // name as a fallback so an older Act4Heart build still binds.
+        var targetType = AccessTools.TypeByName("Act4Heart.Powers.BeatOfDeathPower")
+                         ?? AccessTools.TypeByName("Act4Heart.BeatOfDeathPower");
         if (targetType == null)
         {
-            MainFile.Log.Info("[HeartShake] Act4Heart.BeatOfDeathPower not found; BeatOfDeath redirect patch skipped.");
+            MainFile.Log.Info("[HeartShake] Act4Heart (Powers.BeatOfDeathPower) not found; BeatOfDeath redirect patch skipped.");
             return;
         }
 

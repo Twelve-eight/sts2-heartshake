@@ -136,3 +136,15 @@ hover tip 因 `... .hover.desc not found` 被跳过. 已修正两个旧键, 新�
 死亡节拍改由奥斯提承受的效果需在 Act4Heart 心脏战中, 使用死灵绑定者且召唤了
 奥斯提, 并开启选项后才能验证. 代码路径: 前缀命中 -> Osty 存活 -> `Flash` +
 `Play` + `CreatureCmd.Damage(..., Osty, ...)`. 若 Act4Heart 未装则补丁静默跳过.
+
+---
+
+## 2026-09-12 (夜) astra-advice 项 8 修复: 类型命名空间 (主会话单线)
+
+- **缺陷**: 死亡节拍补丁按 `Act4Heart.BeatOfDeathPower` 查找, 实机工坊 DLL 里
+  该类在 `Act4Heart.Powers` 子命名空间 (证据 heart-type-identities.txt) →
+  TypeByName 解析 null → 新功能永远静默 skipped。
+- **修复**: 先按验证过的全名 `Act4Heart.Powers.BeatOfDeathPower` 查找, 保留旧
+  扁平名作回退 (兼容旧版 Act4Heart); skip 日志口径同步更正。
+- **验证**: 隔离构建 0 错误, 已部署实机。已确认的音效/震动补丁未触碰。
+  实机验收: 装有 Act4Heart + 开关开启 → 死亡节拍伤害转嫁给 Osty。
