@@ -100,3 +100,39 @@ HeartShake 立场: 不做拍对齐 (忠实原版解耦行为), 见 heartbeat.md 
   Committing update..Success.
 - VDF publishedfileid 已回填固化, 后续更新直接重复同一条推送命令即可.
 - 工坊页: https://steamcommunity.com/sharedfiles/filedetails/?id=3799286717
+
+## Session 4 - 2026-09-12: BeatOfDeath 改由奥斯提承受 + 本地化键修复
+
+### 用户请求
+心脏战斗中出牌受伤(死亡节拍)不会被奥斯提拦截 -> 加一个选项控制.
+
+### 根因
+Act4Heart.BeatOfDeathPower.AfterCardPlayed (`G:/omp works/.tmp/a4h-src/Act4Heart.decompiled.cs:859-867`)
+打 `(ValueProp)4 = Unpowered` 伤害. Osty 的 DieForYouPower
+(`MegaCrit.Sts2.Core.Models.Powers/DieForYouPower.cs:15-20`) 只拦截
+`IsPoweredAttack()` (= `Move && !Unpowered`), 所以 4 永远不会被拦截.
+
+### 实现
+- `Patches/BeatOfDeathRedirectPatch.cs`: 无 Act4Heart 编译依赖,
+  `AccessTools.TypeByName("Act4Heart.BeatOfDeathPower")` 运行时查类型,
+  prefix 在 `AfterCardPlayed` 上. 选项关闭或 Osty 已死/未召唤时直接返回 `true`
+  (走原版). 选项开启且 Osty 存活时: 复现 `Flash()` + `NDebugAudioManager.Play`,
+  然后 `CreatureCmd.Damage(..., owner.Osty, ..., (ValueProp)4, ...)` 并短路原方法.
+  保留 `Unpowered` props => 不改变格挡/力量语义.
+- `HeartShakeConfig.cs`: `BeatOfDeathTargetsOsty` 默认 `false` (保持原版行为).
+
+### 顺带发现的已发布缺陷: 本地化键 mismatch
+BaseLib `SimpleModConfig` 取标签键 = `{ModPrefix}{StringHelper.Slugify(propertyName)}.title`.
+`Slugify` 对 camelCase 的规则是 `([A-Za-z0-9]|\G(?!^))([A-Z])` -> `"$1_$2"`,
+所以 `EnableHeartShake` -> `ENABLE_HEART_SHAKE`.
+现有键 `HEARTSHAKE-ENABLEHEARTSHAKE.title` 与之不匹配 => 设置页显示原始属性名,
+hover tip 因 `... .hover.desc not found` 被跳过. 已修正两个旧键, 新增一个键,
+均通过真实 .NET 正则验证.
+
+### 构建
+0 警告 / 0 错误, PCK packed.
+
+### 未实机验证
+死亡节拍改由奥斯提承受的效果需在 Act4Heart 心脏战中, 使用死灵绑定者且召唤了
+奥斯提, 并开启选项后才能验证. 代码路径: 前缀命中 -> Osty 存活 -> `Flash` +
+`Play` + `CreatureCmd.Damage(..., Osty, ...)`. 若 Act4Heart 未装则补丁静默跳过.
