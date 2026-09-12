@@ -3,7 +3,7 @@
   "name": "HeartShake",
   "author": "omp",
   "description": "Restores the StS1 heartbeat screen shake and sound in the Act4Heart Corrupt Heart fight (workshop 3747537811).",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "min_game_version": "0.109.0",
   "has_pck": true,
   "has_dll": true,
