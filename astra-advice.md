@@ -56,3 +56,14 @@ EnableHeartShake=false 只阻止新建 node. 已在心脏战中关闭, _Process 
 4. 更新版本/文档需要用户决定; 本轮没有 Steam 发布授权.
 
 证据: `../astra-advice-evidence/2026-09-12/heart-type-identities.txt`, `binary-inputs.json`, `build-results.json`. 检查时 DEVLOG.md 有别人的未提交修改, 本轮保留, 不纳入建议提交.
+
+## 附录: 先证明能力可达, 再证明观感与数值
+
+通用流程见 [总建议附录](../astra-advice.md).
+
+1. 把 "mod loaded", "依赖已加载", "目标类型存在", "patch attached", "该次 CardPlay 进入 prefix", "Osty 实际受伤" 分开记录. 前一项不自动证明后一项.
+2. 用真缺依赖与目标名写错作对照. 两者都能返回 null, 但一个是合法 dormant, 一个是实现故障; 不用同一条 skipped 日志消除区别.
+3. 把有状态对象放到生命周期中测: Attach 前关闭, 已 Attach 后关闭, 房间退出, 心脏死亡, 重进房间. 只读配置属性不能证明已存在 node 停止工作.
+4. 对重定向明确是改目标还是复用原拦截协议. owner/Osty/队友/Osty 溢出伤害的关系从契约推导, 不因 "让宠物挡" 就自行新增规则.
+
+最短复验: 正确 DLL 类型身份 -> 实际挂载 -> 开关开/关的同一张牌 -> 无 Osty 的对照 -> 退出房间后无残留 node/节拍. 已确认的旧音效观感不重做无关检查, 新玩法路径单独证明.
