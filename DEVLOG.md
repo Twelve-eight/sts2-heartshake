@@ -148,3 +148,9 @@ hover tip 因 `... .hover.desc not found` 被跳过. 已修正两个旧键, 新�
   扁平名作回退 (兼容旧版 Act4Heart); skip 日志口径同步更正。
 - **验证**: 隔离构建 0 错误, 已部署实机。已确认的音效/震动补丁未触碰。
   实机验收: 装有 Act4Heart + 开关开启 → 死亡节拍伤害转嫁给 Osty。
+
+## 2026-09-14 astra 第三轮审查交接记录
+
+第三轮隔离构建 exit 0, 0 warnings. 当前源代码首选 `Act4Heart.Powers.BeatOfDeathPower`, 但本轮未对当前 HeartShake DLL 做目标安装或 Act4Heart 战斗. 仍需验证开关, Osty 状态, 格挡/无形/过量伤害, 双端配置和退出生命周期.
+
+证据索引: `G:\\omp works\\astra-advice-evidence\\2026-09-14\\handoff-state.json`. 当前 advice 修改未提交, 未操作游戏或部署.

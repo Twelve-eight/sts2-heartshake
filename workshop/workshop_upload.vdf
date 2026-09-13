@@ -25,12 +25,18 @@
 
 [i]All parameters extracted from the original StS1 jar bytecode: constant 1.3333s interval, LOW/SHORT-equivalent shake (respects your screen shake setting), the original heartbeat ogg at volume 0.75 with pitch jitter, stops the moment the heart dies.[/i]
 
+[h2]死亡节拍拦截 / Beat of Death intercept[/h2]
+
+尖塔之心的死亡节拍(每打出一张牌扣血)原本由玩家承受. 本 mod 新增开关[b]出牌伤害由奥斯提承受[/b](默认关): 启用后, 若奥斯提(Osty)存活, 死亡节拍伤害改由奥斯提承受; 奥斯提已阵亡或未召唤时回落玩家. 原版奥斯提的舍身保护只拦截有来源的攻击, 拦不住这种无来源 HP 损失 —— 这个补丁补上缺口. 仅在 Act4Heart 存在时生效.
+
+[i]Optionally redirect the Beat of Death (play-a-card HP loss) to your Osty while it is alive - the vanilla Die-For-You guard only blocks sourced attacks, not this unpowered loss. Off by default; toggle in Settings -> Mod Settings -> HeartShake.[/i]
+
 [h2]使用方法 / Usage[/h2]
 
 [list]
 [*][b]必须先订阅[/b][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3747537811]Act 4 Heart[/url](工坊 3747537811)
 [*]进入 Act4 的尖塔之心战斗即自动生效, 无需任何操作
-[*]设置 -> Mod 设置 -> HeartShake 可关闭震动或单独关闭音效
+[*]设置 -> Mod 设置 -> HeartShake 可关闭震动或单独关闭音效, 以及死亡节拍是否由奥斯提承受(默认关)
 [/list]
 
 [i]Requires the Act 4 Heart mod (linked above). Works automatically in the Corrupt Heart fight. Toggle shake or sound separately in Settings -> Mod Settings -> HeartShake.[/i]

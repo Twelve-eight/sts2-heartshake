@@ -1,8 +1,8 @@
-## 第二轮复审 (2026-09-13)
+## 第三轮复审 (2026-09-14)
 
-当前隔离构建 exit 0, 0 warning/0 error; 当前日志 `godot.log:931` 显示 BeatOfDeath redirect patch applied. 这支持当前加载配置下的挂载日志, 仍不等于真实 Act4Heart 战斗中的目标/伤害行为已验收. 本轮未启动游戏.
+当前隔离构建 exit 0, 0 warning/0 error. 当前源代码已用 `Act4Heart.Powers.BeatOfDeathPower` 作为首选类型名并保留旧名回退;本轮没有加载当前 HeartShake DLL 挂载目标,也没有真实 Act4Heart 战斗.
 
-仍需覆盖: Osty 存在/缺席/死亡, 格挡/无形/过量伤害,默认关闭,双端配置差异,一次 CardPlay 单次执行,节点退出生命周期. 保留原有心跳观感用户证据, 不将其推广到新重定向路径.
+HEART-1 的类型身份修复仍只能算源码/历史日志支持. 仍未覆盖开关开关, Osty 存在/缺席/死亡,格挡/无形/过量伤害,双端配置一致性,单次 CardPlay 和房间退出节点生命周期. 不把构建或旧 `redirect patch applied` 日志升级成伤害目标已验证.
 
 # Astra advice - HeartShake
 
