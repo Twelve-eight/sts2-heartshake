@@ -1,11 +1,14 @@
 "workshopitem"
 {
 	"appid"		"2868840"
-	"contentfolder"		"G:\\omp works\\sts2-heartshake\\workshop\\content"
-	"previewfile"		"G:\\omp works\\sts2-heartshake\\workshop\\preview.png"
+	"contentfolder"		"G:\\omp works\\Sts\\sts2-heartshake\\workshop\\content"
+	"previewfile"		"G:\\omp works\\Sts\\sts2-heartshake\\workshop\\preview.png"
 	"visibility"		"0"
-	"title"		"HeartShake (尖塔之心心跳震动 / Corrupt Heart Heartbeat)"
+	"title"		"HeartShake (尖塔之心心跳震动 / Corrupt Heart Heartbeat) [测试中]"
 	"description"		"[h1]HeartShake(尖塔之心心跳震动)[/h1]
+
+[b]测试中[/b] -- 本模组仍在测试中, 内容与数值可能随版本调整, 欢迎反馈问题.
+[i]WORK IN PROGRESS - still being tested; content and numbers may change between versions.[/i]
 
 在 Act4Heart mod 的尖塔之心(Corrupt Heart)战斗中, 还原一代原版的心跳: 每 1.33 秒一次的屏幕脉冲震动 + 一代原版心跳音效, 直到心脏被打死.
 
