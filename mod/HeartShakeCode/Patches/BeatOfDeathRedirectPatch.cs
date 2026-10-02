@@ -24,6 +24,16 @@ internal static class BeatOfDeathRedirectPatch
 {
     internal static void Apply(HarmonyLib.Harmony harmony)
     {
+        // F08 fail-closed runtime entry: never install the redirect when the master
+        // switch is off, even if a future caller bypasses MainFile's own gate. The
+        // group switch is checked live in Prefix below so it can be toggled
+        // mid-session without reinstalling patches.
+        if (!HeartShakeConfig.EnableHeartShake)
+        {
+            MainFile.Log.Info("[HeartShake] master switch is OFF; BeatOfDeath redirect patch not installed.");
+            return;
+        }
+
         // TYPE IDENTITY (astra-advice item 8, 2026-09-12; evidence
         // astra-advice-evidence/2026-09-12/heart-type-identities.txt): the
         // shipped Act4Heart dll declares the class in the Powers SUB-namespace -
@@ -53,7 +63,9 @@ internal static class BeatOfDeathRedirectPatch
 
     private static bool Prefix(PowerModel __instance, PlayerChoiceContext context, CardPlay cardPlay, ref Task __result)
     {
-        if (!HeartShakeConfig.BeatOfDeathTargetsOsty)
+        // F08 fail-closed: master switch first (covers a mid-session off), then
+        // the group switch. Either off means the vanilla path runs unchanged.
+        if (!HeartShakeConfig.EnableHeartShake || !HeartShakeConfig.BeatOfDeathTargetsOsty)
         {
             return true;
         }

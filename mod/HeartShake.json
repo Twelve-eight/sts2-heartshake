@@ -2,7 +2,7 @@
   "id": "HeartShake",
   "name": "HeartShake",
   "author": "omp",
-  "description": "Restores the StS1 heartbeat screen shake and sound in the Act4Heart Corrupt Heart fight (workshop 3747537811).",
+  "description": "Restores the StS1 heartbeat screen shake and sound in the Act4Heart Corrupt Heart fight (workshop 3747537811). Also adds an optional Beat of Death redirect: with BeatOfDeathTargetsOsty enabled, card-play self-damage goes to Osty while Osty is alive (otherwise the player, exactly as vanilla). Master switch EnableHeartShake: off at mod init means no HeartShake behavior patch is installed (heartbeat and Beat of Death redirect both absent; config and SimpleLoc registration still run so the settings page stays reachable); switching it off mid-session stops new heartbeat attachments and the redirect immediately, while a heartbeat already attached to the current combat room finishes that combat; switching it on from off requires a game restart. Group switches: EnableHeartSound gates the sound per beat (live); BeatOfDeathTargetsOsty gates the redirect live and defaults off. Defaults preserve vanilla behavior.",
   "version": "0.1.1",
   "min_game_version": "0.109.0",
   "has_pck": true,

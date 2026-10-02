@@ -195,9 +195,36 @@ public partial class HeartBeatNode : Node
             return;
         }
         _stopped = true;
-        SetProcess(false);
-        CombatManager.Instance.CombatEnded -= OnCombatEnded;
-        ReleaseActivePlayer();
+
+        // Cleanup is deliberately segmented: a Godot teardown exception in one operation
+        // must not skip the event unsubscribe or the audio-player release that follows it.
+        try
+        {
+            SetProcess(false);
+        }
+        catch (System.Exception e)
+        {
+            MainFile.Log.Warn($"Heartbeat process-stop cleanup failed: {e.Message}");
+        }
+
+        try
+        {
+            CombatManager.Instance.CombatEnded -= OnCombatEnded;
+        }
+        catch (System.Exception e)
+        {
+            MainFile.Log.Warn($"Heartbeat event-unsubscribe cleanup failed: {e.Message}");
+        }
+
+        try
+        {
+            ReleaseActivePlayer();
+        }
+        catch (System.Exception e)
+        {
+            MainFile.Log.Warn($"Heartbeat player cleanup failed: {e.Message}");
+        }
+
         MainFile.Log.Info($"Heartbeat stopped ({reason})");
     }
 
@@ -209,8 +236,26 @@ public partial class HeartBeatNode : Node
         {
             return;
         }
-        player.Stop();
-        player.QueueFree();
+
+        try
+        {
+            player.Stop();
+        }
+        catch (System.Exception e)
+        {
+            MainFile.Log.Warn($"Heartbeat player stop failed: {e.Message}");
+        }
+        finally
+        {
+            try
+            {
+                player.QueueFree();
+            }
+            catch (System.Exception e)
+            {
+                MainFile.Log.Warn($"Heartbeat player release failed: {e.Message}");
+            }
+        }
     }
 
     private void OnPlayerFinished(AudioStreamPlayer player)

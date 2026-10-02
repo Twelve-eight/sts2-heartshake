@@ -20,12 +20,29 @@ public partial class MainFile : Node
     public static void Initialize()
     {
         // Settings -> Mod Settings page (BaseLib auto-UI): master toggle + sound toggle.
+        // Config registration stays outside the master-switch gate so the settings
+        // page remains reachable to turn the mod back on.
         ModConfigRegistry.Register(ModId, new HeartShakeConfig());
         // BaseLib SimpleLoc for settings labels (eng + zhs).
         BaseLib.Patches.Localization.SimpleLoc.EnableSimpleLoc(ModId);
         // Register C# scripts referenced by scenes shipped in the .pck (none yet,
         // but the heartbeat ogg is loaded through ResPath).
         Godot.Bridge.ScriptManagerBridge.LookupScriptsInAssembly(Assembly.GetExecutingAssembly());
+
+        // Master-switch contract (F08, 2026-10-02): when EnableHeartShake is off at
+        // mod-init time, install NO HeartShake behavior Harmony patch - neither the
+        // heartbeat room patch nor the Beat of Death redirect. (The BaseLib SimpleLoc
+        // registration above is loc plumbing, not a gameplay behavior patch.) Runtime entries
+        // (HeartBeatNode.Attach and BeatOfDeathRedirectPatch.Prefix) still re-check
+        // the live property: turning the switch off mid-session stops new heartbeat
+        // attachments and stops the redirect immediately, while an already attached
+        // heartbeat finishes the current combat. Turning the switch back on needs a
+        // game restart because patch installation only happens here.
+        if (!HeartShakeConfig.EnableHeartShake)
+        {
+            Log.Info($"{ModId} master switch is OFF: no HeartShake behavior patches installed (heartbeat and Beat of Death redirect both disabled). Takes effect at game start.");
+            return;
+        }
 
         try
         {
