@@ -35,6 +35,8 @@ internal static class CombatRoomReadyPatch
                 var entity = creatureNode.Entity;
                 if (entity?.Monster?.Id.Entry == HeartMonsterId && !entity.IsDead)
                 {
+                    // Attach de-duplicates: a repeated _Ready on the same room
+                    // reuses the existing node instead of stacking pulses.
                     HeartBeatNode.Attach(__instance, entity);
                     return;
                 }
