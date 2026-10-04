@@ -94,3 +94,11 @@ csproj: `<A4HDll>G:/steam/steamapps/workshop/content/2868840/3747537811/Act4Hear
 - 构建 0 错误, PCK packed, mods/ mtime 更新.
 - pck 字节级抽查: 心跳 ogg 内嵌.
 - 实机心脏战视觉效果: 用户已双确认 (DEVLOG Session 2: "震动/音效现已双确认").
+
+## 2026-10-05 Workshop quick PCK 来源契约
+
+- 本项目的 PackPck producer独立于 CopyToModsFolderOnBuild, no-deploy Release build也必须生成相邻 .pck.sha256. Begin记录真实Utc起点并作废旧摘要, Write只接受实际pack退出0且非skip; 缺失/空包/PCK早于pack或DLL/摘要回读不一致均中止. 不手工补摘要或伪造mtime.
+- disabled或inner-export不运行producer, 不重标旧包. 现有包target对显式inner-export仍可能重写PCK, 该调用在此项目没有当前调用方; 可能留下旧摘要不匹配, consumer必须fail-closed拒绝. 不是已经验证的inner游戏导出路径.
+- 本机Roslyn工厂Fragment的自动尾部为return Success, Success默认true. 新增ReadPckMetadata成功路径不显式return true, missing/exception保留false, 不通过suppress隐藏CS0162.
+- 中央构建显式 CopyToModsFolderOnBuild=false 和 Sts2Path=E:\Slay the Spire 2; 不部署游戏, 所有cache/TEMP在G:. 构建/来源门禁不等于本mod新增游戏/UI/多人验收.
+- 全量发布契约和监督入口: G:\omp works\Sts\sts2-spire1\docs\WORKSHOP-PREPARATION-CONTRACT-20261005.md 与 G:\omp works\Sts\sts2-spire1\docs\reports\workshop-prep-20261004. 正式全量VerifyOnly/GuardsOnly另记最终原始输出, 本段不预称它们通过.
