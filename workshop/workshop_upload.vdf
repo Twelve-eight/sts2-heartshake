@@ -62,6 +62,6 @@
 [/list]
 
 [i]The Workshop BaseLib often lags behind the official GitHub. If BaseLib errors after a game update, grab the latest release from GitHub (link above), unzip into the mods folder, and unsubscribe from the Workshop copy to avoid double-loading.[/i]"
-	"changenote"		"v0.1.1: the Beat-of-Death redirect now resolves Act4Heart.Powers.BeatOfDeathPower (verified type identity in the shipped Act4Heart dll) - the feature previously never activated due to a namespace mismatch."
+	"changenote"		"v0.1.1: the Beat-of-Death redirect now resolves Act4Heart.Powers.BeatOfDeathPower (verified type identity in the shipped Act4Heart dll) - the feature previously never activated due to a namespace mismatch. Also in this build: the description documents the optional Beat of Death redirect (BeatOfDeathTargetsOsty: card-play self-damage goes to Osty while Osty is alive, otherwise the player as vanilla) and the EnableHeartShake master switch."
 	"publishedfileid"		"3799286717"
 }
