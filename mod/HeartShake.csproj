@@ -28,10 +28,11 @@
         </Reference>
     </ItemGroup>
 
-    <!-- Optional Act4Heart integration: we identify the heart by its model id string
-         (CORRUPT_HEART) so no compile-time reference is needed. The dll reference is
-         kept available (commented) in case a future hook needs its types; the mod must
-         build and run cleanly whether or not Act4Heart is installed. -->
+    <!-- Act4Heart integration: we identify the heart by its model id string
+         (CORRUPT_HEART) and look up Act4Heart types by name, so the build does not
+         depend on the Act4Heart assembly (the reference below stays commented).
+         At runtime Act4Heart is REQUIRED: HeartShake.json declares it as a hard
+         dependency, because the mod has no effect outside the Act4Heart heart fight. -->
     <!--
     <PropertyGroup>
         <A4HDll>G:/steam/steamapps/workshop/content/2868840/3747537811/Act4Heart.dll</A4HDll>
