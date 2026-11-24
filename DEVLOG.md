@@ -174,3 +174,17 @@ hover tip 因 `... .hover.desc not found` 被跳过. 已修正两个旧键, 新�
 - 本仓来源通过不是全量可上传证明. 全量仅Spire1 REBUILD_REQUIRED, 因另一个Forms会话正在改其源码; 正式Spire1 wrapper GuardsOnly在全量provenance拒绝. -Only不豁免正式上传入口的全量检查.
 - 复制前备份r4-staging-backup.json, 最终本仓各文件hash在r4-final-seven-payloads.json. 原refresh的freshness在复制后核验, 失败不保证全部staging未写; 本次有效刷新不回填旧包.
 - 本轮无新增游戏运行验收. 只精确备份本仓发布暂存与本段日志, 保留已有dirty源码/路径清理/advice删除, 不git add -A. 中央接续入口G:/omp works/Sts/sts2-spire1/docs/CHECKPOINT-workshop-prep-20261005.md.
+
+## 2026-11-15 — v0.113心跳核心实跑，跨房间受控事件仍HOLD
+
+R=`G:/tmp/sts2-113-20261113`。Main运行独立Identity metadata reader：固定HeartShake DLL SHA `01ba30b335841551168165f93770dcea96d56e0ee2a2beef68de5b3814d46033` / MVID `86a95bb2-8e93-4911-b36f-32e93e9a693a`，PE CodeView与PDB Guid/Stamp/Age一致，五当前生产源码的Document checksum全部一致，九方法原IL hash与后续加载raw相连。收据`heart-main-identity-{build-first,first}-execution.json`及`owned-mods/heart-lifecycle-review/identity.json`。此步骤只读元数据，未启动游戏。
+
+首载体build成功0警告/0错误；首次normal在Harmony安装时报继承反射目标错误，明确要求`Godot.GodotObject::IsQueuedForDeletion`。Main保留八源与全部产物于`heart-main-platform-first-sources/`，只把Platform.cs的一处`typeof(Node)`改为声明类型`typeof(GodotObject)`。随后实跑三模式完成，但独立门拒绝空sources清单；PowerShell `$Sources`与`$sources`大小写不敏感，同一变量被清空。Main将两处清单名改为`$SourceNames`，旧版三raw/源码/产物保留`heart-main-platform-fixed-sources/`；新build实际记录8源和11输入，新run完成。未放宽空清单门。
+
+原raw有一行固定Sentry无原生扩展提示再接JSON。Main保留原raw，仅在独立和作者gate的独占副本中允许这一条精确前缀（CRLF/LF），其它非JSON仍拒绝；原作者嵌入checker未改。两次平台/runner增量通过完整文本唯一替换比较记录在`review-source-freeze-v3-main.json`、`review-source-freeze-v4-main.json`；原v2不改。原HeartLifecyclePeer唤醒失败`No model configured`，因此增量只记Main复核，不能冒称该代理再次通过。
+
+[C Main] `heart-main-inventory-fixed-{build,run}-execution.json`均exit0。直接运行Main副本`heart-main-review-results.mjs`的normal/mutant/transition/make-controls/actual-tamper/verdict-tamper/binding-tamper，收据`heart-main-independent-gate-inventory-fixed-execution.json`。normal12case实际字段通过；真实C02时钟变异仅四项指定字段拒绝；保PASS改C01 beats、保PASS改PDB compiled checksum均目标拒绝，仅翻verdict仍接受。作者副本`heart-main-author-results.mjs`七项对照得到相同核心结论，收据`heart-main-author-gate-first-execution.json`。
+
+[C Main] transition的C12失败：旧A结束事件携stateA，新B的stateB非空且不同，当前visual=B；实际B被停止、订阅由1变0、current播放器清空并QueueFree。独立门拒绝C12五项及事件快照三项，共8项；作者门一致。常规C05双房间、C06空state fallback、C13无关房间正控通过。这证明受控输入违反B保留契约，尚不证明自然游戏时序可触发，也未修改生产OnCombatEnded。HeartShake总任务保持open。
+
+核心九生产方法零patch；原生音画、场景树、自然Finished、Attach、自然跨房间事件与可玩性未验。C14 allocation-seam未运行。不部署、不发布、不操作用户存档。

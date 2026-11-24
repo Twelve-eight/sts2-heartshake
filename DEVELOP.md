@@ -84,7 +84,7 @@ csproj: `<A4HDll>G:/steam/steamapps/workshop/content/2868840/3747537811/Act4Hear
 
 ## 5. 交付物
 
-- repo `G:/omp works/sts2-heartshake/`: mod/ (csproj+代码+json), DEVELOP.md,
+- repo `G:/omp works/Sts/sts2-heartshake/`: mod/ (csproj+代码+json), DEVELOP.md,
   DEVLOG.md, workshop/ (staging + VDF + 描述).
 - 部署 `G:/steam/steamapps/common/Slay the Spire 2/mods/HeartShake/`.
 - GitHub: `https://github.com/Twelve-eight/sts2-heartshake.git`.

@@ -18,7 +18,7 @@ internal static class CombatRoomReadyPatch
 {
     private const string HeartMonsterId = "CORRUPT_HEART";
 
-    private static void Postfix(NCombatRoom __instance)
+    internal static void Postfix(NCombatRoom __instance)
     {
         try
         {
@@ -46,5 +46,18 @@ internal static class CombatRoomReadyPatch
         {
             MainFile.Log.Error($"CombatRoomReadyPatch failed: {e}");
         }
+    }
+}
+
+/// <summary>
+/// Embedded event combat reuses its VisualOnly room without another _Ready.
+/// Keep this a separate single-target class and share the same attach decision.
+/// </summary>
+[HarmonyPatch(typeof(NCombatRoom), nameof(NCombatRoom.TransitionToActiveCombat))]
+internal static class CombatRoomTransitionPatch
+{
+    private static void Postfix(NCombatRoom __instance)
+    {
+        CombatRoomReadyPatch.Postfix(__instance);
     }
 }

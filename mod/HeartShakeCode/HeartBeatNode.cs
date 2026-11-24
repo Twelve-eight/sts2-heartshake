@@ -49,26 +49,28 @@ public partial class HeartBeatNode : Node
 
     private readonly Creature _heart;
 
-    private readonly Node _room;
+    // The room's state is immutable for this node's lifetime. Creature.CombatState
+    // is cleared by host teardown before some asynchronous combat continuations end.
+    private readonly ICombatState _combatState;
 
     /// <summary>Time left until the next beat; see the scheduling contract above.</summary>
     private double _nextBeatAt;
 
     /// <summary>
-    /// At most one live beat player: it is parented to this node (the room's
-    /// lifetime), so room teardown frees it; it is also stopped and freed
-    /// explicitly on death/combat-end/exit. The ogg is 1.25s, shorter than the
-    /// 1.3333s interval, so the next beat never needs to overlap the previous
-    /// one.
+    /// One reusable native player, parented to this node for the room's lifetime.
+    /// A completed one-shot remains idle until the next beat; stopping the
+    /// heartbeat stops and frees it. No per-beat node or Finished delegate is needed.
     /// </summary>
-    private AudioStreamPlayer? _activePlayer;
+    private AudioStreamPlayer? _beatPlayer;
 
     private bool _stopped;
+    private bool _subscribed;
+    private bool _audioFailed;
 
-    private HeartBeatNode(Creature heart, Node room)
+    private HeartBeatNode(Creature heart, ICombatState combatState)
     {
         _heart = heart;
-        _room = room;
+        _combatState = combatState;
     }
 
     /// <summary>
@@ -78,26 +80,42 @@ public partial class HeartBeatNode : Node
     /// </summary>
     public static HeartBeatNode? Attach(Node parent, Creature heart)
     {
-        if (!HeartShakeConfig.EnableHeartShake)
+        if (!HeartShakeConfig.EnableHeartShake || heart.IsDead)
         {
             return null;
         }
-        if (parent is not NCombatRoom)
+        if (parent is not NCombatRoom room || room.Mode != CombatRoomMode.ActiveCombat)
         {
-            MainFile.Log.Warn("Heartbeat attach rejected: parent is not an NCombatRoom.");
+            MainFile.Log.Warn("Heartbeat attach rejected: parent is not an active NCombatRoom.");
+            return null;
+        }
+        var combatState = heart.CombatState;
+        if (combatState == null || parent.IsQueuedForDeletion())
+        {
+            MainFile.Log.Warn("Heartbeat attach rejected: combat state is absent or the room is exiting.");
             return null;
         }
 
         foreach (var child in parent.GetChildren())
         {
-            if (child is HeartBeatNode existing && GodotObject.IsInstanceValid(existing))
+            if (child is not HeartBeatNode existing || !GodotObject.IsInstanceValid(existing))
             {
-                MainFile.Log.Info("Heartbeat already attached to this room; reusing existing node.");
+                continue;
+            }
+            if (!existing._stopped && !existing.IsQueuedForDeletion()
+                && ReferenceEquals(existing._heart, heart)
+                && ReferenceEquals(existing._combatState, combatState))
+            {
                 return existing;
+            }
+            existing.StopAndRelease("combat replaced");
+            if (!existing.IsQueuedForDeletion())
+            {
+                existing.QueueFree();
             }
         }
 
-        var node = new HeartBeatNode(heart, parent);
+        var node = new HeartBeatNode(heart, combatState);
         try
         {
             parent.AddChild(node);
@@ -106,26 +124,38 @@ public partial class HeartBeatNode : Node
         }
         catch (Exception e)
         {
-            if (GodotObject.IsInstanceValid(node) && !node.IsQueuedForDeletion())
+            MainFile.Log.Error($"Heartbeat attach failed: {e}");
+            node.StopAndRelease("attach failed");
+            try
             {
-                node.QueueFree();
+                if (GodotObject.IsInstanceValid(node) && !node.IsQueuedForDeletion())
+                {
+                    node.QueueFree();
+                }
             }
-            MainFile.Log.Error($"Heartbeat attach failed: {e.Message}");
+            catch (Exception cleanupError)
+            {
+                MainFile.Log.Warn($"Heartbeat attach cleanup failed: {cleanupError}");
+            }
             return null;
         }
     }
 
     public override void _Ready()
     {
-        // First beat lands one full interval after room entry, matching StS1
-        // where the first maxbeat fires at 0.3666*... into the idle loop and the
-        // fight intro plays before the pulse is noticeable.
+        if (_stopped || _subscribed)
+        {
+            return;
+        }
+
+        // Start a fresh full interval on attachment. Godot's process delta is
+        // the clock, so pauses/time scaling follow the host rather than wall time.
         _nextBeatAt = BeatInterval;
 
-        // Combat end (win or loss) fires on the room even while this node is
-        // still kept alive by the scene tree until the next room loads. Stop
-        // the heartbeat immediately instead of waiting for _ExitTree.
+        // CombatEnded may follow awaited victory hooks; keep the captured state
+        // as the owner even if teardown clears the creature's current state.
         CombatManager.Instance.CombatEnded += OnCombatEnded;
+        _subscribed = true;
     }
 
     public override void _Process(double delta)
@@ -141,6 +171,17 @@ public partial class HeartBeatNode : Node
             // pulse and releasing the player now, not at room teardown.
             StopAndRelease("heart died");
             return;
+        }
+
+        if (!ReferenceEquals(_heart.CombatState, _combatState))
+        {
+            StopAndRelease("heart left combat");
+            return;
+        }
+
+        if (!HeartShakeConfig.EnableHeartSound && _beatPlayer != null)
+        {
+            ReleaseBeatPlayer();
         }
 
         _nextBeatAt -= delta;
@@ -172,12 +213,10 @@ public partial class HeartBeatNode : Node
 
     private void OnCombatEnded(CombatRoom room)
     {
-        // Prefer the model identity carried by the event: the heart's CombatState
-        // belongs to the ended CombatRoom even while NRun is transitioning its
-        // current visual node. Keep the visual-room fallback for engine paths
-        // that clear the creature state before dispatching the event.
-        if (ReferenceEquals(room.CombatState, _heart.CombatState)
-            || ReferenceEquals(NCombatRoom.Instance, _room))
+        // Never infer ownership from the current visual room or the creature's
+        // mutable CombatState. A late event from A must leave B untouched even
+        // after either creature has been detached by host cleanup.
+        if (ReferenceEquals(room.CombatState, _combatState))
         {
             StopAndRelease("combat ended");
         }
@@ -204,35 +243,39 @@ public partial class HeartBeatNode : Node
         }
         catch (System.Exception e)
         {
-            MainFile.Log.Warn($"Heartbeat process-stop cleanup failed: {e.Message}");
+            MainFile.Log.Warn($"Heartbeat process-stop cleanup failed: {e}");
         }
 
         try
         {
-            CombatManager.Instance.CombatEnded -= OnCombatEnded;
+            if (_subscribed)
+            {
+                CombatManager.Instance.CombatEnded -= OnCombatEnded;
+                _subscribed = false;
+            }
         }
         catch (System.Exception e)
         {
-            MainFile.Log.Warn($"Heartbeat event-unsubscribe cleanup failed: {e.Message}");
+            MainFile.Log.Warn($"Heartbeat event-unsubscribe cleanup failed: {e}");
         }
 
         try
         {
-            ReleaseActivePlayer();
+            ReleaseBeatPlayer();
         }
         catch (System.Exception e)
         {
-            MainFile.Log.Warn($"Heartbeat player cleanup failed: {e.Message}");
+            MainFile.Log.Warn($"Heartbeat player cleanup failed: {e}");
         }
 
         MainFile.Log.Info($"Heartbeat stopped ({reason})");
     }
 
-    private void ReleaseActivePlayer()
+    private void ReleaseBeatPlayer()
     {
-        var player = _activePlayer;
-        _activePlayer = null;
-        if (player == null || !GodotObject.IsInstanceValid(player) || player.IsQueuedForDeletion())
+        var player = _beatPlayer;
+        _beatPlayer = null;
+        if (player == null || !GodotObject.IsInstanceValid(player))
         {
             return;
         }
@@ -241,43 +284,33 @@ public partial class HeartBeatNode : Node
         {
             player.Stop();
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
-            MainFile.Log.Warn($"Heartbeat player stop failed: {e.Message}");
+            MainFile.Log.Warn($"Heartbeat player stop failed: {e}");
         }
         finally
         {
             try
             {
-                player.QueueFree();
+                if (!player.IsQueuedForDeletion())
+                {
+                    player.QueueFree();
+                }
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
-                MainFile.Log.Warn($"Heartbeat player release failed: {e.Message}");
+                MainFile.Log.Warn($"Heartbeat player release failed: {e}");
             }
-        }
-    }
-
-    private void OnPlayerFinished(AudioStreamPlayer player)
-    {
-        if (ReferenceEquals(_activePlayer, player))
-        {
-            _activePlayer = null;
-        }
-        if (GodotObject.IsInstanceValid(player) && !player.IsQueuedForDeletion())
-        {
-            player.QueueFree();
         }
     }
 
     private void PlayBeat()
     {
-        if (_beatLoadFailed)
+        if (_audioFailed || _beatLoadFailed)
         {
             return;
         }
 
-        AudioStreamPlayer? player = null;
         try
         {
             _beatStream ??= LoadBeatStream();
@@ -288,44 +321,45 @@ public partial class HeartBeatNode : Node
                 return;
             }
 
-            // One player at a time: stop and free the previous beat before
-            // starting this one. The ogg is 1.25s < 1.3333s interval, so this
-            // does not cut a still-playing beat.
-            ReleaseActivePlayer();
-
-            // StS1: playAV random pitch in [-0.05, 0.05] -> Godot pitch scale
-            // 1 +/- 0.05.
-            var newPlayer = new AudioStreamPlayer
+            var player = _beatPlayer;
+            if (player != null
+                && (!GodotObject.IsInstanceValid(player) || player.IsQueuedForDeletion()))
             {
-                Stream = _beatStream,
-                VolumeLinear = BeatVolume,
-                PitchScale = 1f + (float)GD.RandRange(-PitchJitter, PitchJitter),
-                Bus = new StringName("SFX"),
-            };
-            player = newPlayer;
-            newPlayer.Finished += () => OnPlayerFinished(newPlayer);
+                // A native owner may have retired this player since the last
+                // beat. Discard it before use and rebuild only in this case.
+                ReleaseBeatPlayer();
+                player = null;
+            }
+            if (player == null)
+            {
+                player = new AudioStreamPlayer();
+                // Own the native node before any setter or AddChild can fail.
+                _beatPlayer = player;
+                player.Stream = _beatStream;
+                player.VolumeLinear = BeatVolume;
+                player.Bus = "SFX";
+                AddChild(player);
+            }
 
-            // Parent to this node (a child of the combat room), not NGame:
-            // the player then lives and dies with the room and can be
-            // released deterministically by StopAndRelease.
-            AddChild(newPlayer);
-            _activePlayer = newPlayer;
-            newPlayer.Play();
+            // The one-shot ends naturally; Play restarts this same native player.
+            // StS1 playAV random pitch in [-0.05, 0.05] -> scale 1 +/- 0.05.
+            player.PitchScale = 1f + (float)GD.RandRange(-PitchJitter, PitchJitter);
+            player.Play();
         }
         catch (Exception e)
         {
-            if (player != null && GodotObject.IsInstanceValid(player) && !player.IsQueuedForDeletion())
+            MainFile.Log.Error($"Heartbeat audio failed: {e}");
+            // A player failure only disables audio for this combat, not every
+            // future room that could still use the successfully loaded stream.
+            _audioFailed = true;
+            try
             {
-                player.Stop();
-                player.QueueFree();
+                ReleaseBeatPlayer();
             }
-            if (ReferenceEquals(_activePlayer, player))
+            catch (Exception cleanupError)
             {
-                _activePlayer = null;
+                MainFile.Log.Warn($"Heartbeat audio cleanup failed: {cleanupError}");
             }
-            MainFile.Log.Error($"Heartbeat audio failed: {e.Message}");
-            // Don't let a broken stream break the shake loop; stop trying.
-            _beatLoadFailed = true;
         }
     }
 
