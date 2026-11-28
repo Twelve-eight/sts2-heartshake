@@ -23,10 +23,12 @@
 
 ## 从源码构建 / Building from source
 
+前置要求：**.NET 9 SDK** 与已安装的《杀戮尖塔 2》。
+
 ```bash
 dotnet build mod/HeartShake.csproj -c Release \
   -p:Sts2Path="<path-to-Slay-the-Spire-2>" \
   -p:CopyToModsFolderOnBuild=false
 ```
 
-详细设计与验证记录见 [DEVELOP.md](DEVELOP.md) 与 [DEVLOG.md](DEVLOG.md)。
+构建产物位于 `mod/.godot/mono/temp/bin/Release/HeartShake.{dll,pck}`（配合 `mod/HeartShake.json`）。详细设计与验证记录见 [DEVELOP.md](DEVELOP.md) 与 [DEVLOG.md](DEVLOG.md)。
